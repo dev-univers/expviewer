@@ -1,0 +1,78 @@
+<?exp
+	let fs = require("fs")
+	let {resolve, dirname} = require("path")
+
+	let users = [{
+		"username": "user01",
+		"email": "user01@devu.io",
+		"following": true
+	}, {
+		"username": "user02",
+		"email": "user02@devu.io",
+		"following": true
+	}, {
+		"username": "user03",
+		"email": "user03@devu.io",
+		"following": false
+	}, {
+		"username": "user04",
+		"email": "user04@devu.io",
+		"following": true
+	}]
+
+	function rand(min, max){
+		if(max == undefined){
+			max = min
+			min = 0
+		}
+		return Math.round(Math.random()*(max-min) + min)
+	}
+
+	function getColor(){
+		return `rgb(${rand(255)}, ${rand(255)}, ${rand(255)})`
+	}
+	
+	function wait(t=1){
+		return new Promise((resolve, reject)=>{
+			setTimeout(()=>{
+				resolve("done")
+				pop=""
+			}, t*1000)
+		})
+	}
+?>
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title><?e= "find friends" ?></title>
+	<style>
+		<?e= fs.readFileSync(resolve(dirname(__view), "style.css"), "utf8") ?>
+	</style>
+</head>
+<body>
+	
+	<h1> Make news relations </h1>
+	<div role="list">
+		<?exp
+			users.forEach(({username, following})=>{
+				?>
+				<div class="user">
+					<div class="profil" style="background: <?e= getColor() ?>;"></div>
+					<div class="meta">
+						<h3 class="uname"><?e= username ?></h3>
+						<div class="action">
+							<button data-action="<?e= following? "disfollow":"follow" ?>"><?e= following? "disfollow":"follow" ?></button>
+						</div>
+					</div>
+				</div>
+				<?exp
+			})
+		?>
+	</div>
+	<script>
+		console.log(<?e= JSON.stringify(Array.from(Object.getOwnPropertyNames(this))) ?>)
+	</script>
+	<code><?e= await wait(2) ?></code>
+</body>
+</html>

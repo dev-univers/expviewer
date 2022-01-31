@@ -1,0 +1,44 @@
+.user {
+    display: flex;
+    margin: .5rem;
+    max-width: 400px;
+}
+
+.user .profil {
+    height: 75px;
+    width: 75px;
+    border-radius: 50%;
+}
+
+.user .meta{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-left: .5rem;
+    justify-content: space-between;
+}
+
+.user .meta .uname{
+    margin: .3rem 0rem;
+}
+
+.user .meta button{
+    cursor: pointer;
+    float: right;
+    min-width: 90px;
+    margin: 0.2rem;
+    padding: 0.5rem 1rem;
+    background: #2385ff;
+    color: white;
+    font-weight: 500;
+    border: 1px solid #2385ff;
+    border-radius: 4px;
+    transition: all 300ms ease-in-out;
+}
+
+.user .meta button:hover {
+    border-color: #2385ff;
+    background: white;
+    color: #2385ff;
+    transform: scale(1.1);
+}
