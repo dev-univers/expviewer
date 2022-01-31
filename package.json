@@ -9,6 +9,13 @@
     "build": "rm -r lib && tsc",
     "watch": "rm -r lib && tsc -w"
   },
+  "files": [
+    "lib",
+    "syntaxes",
+    "index",
+    "LICENCE",
+    "README.md"
+  ],
   "keywords": [
     "express",
     "nodejs",
