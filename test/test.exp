@@ -51,7 +51,7 @@
 	</style>
 </head>
 <body>
-	
+	<h1><?e= await wait(2) ?>!!</h1>
 	<h1> Make news relations </h1>
 	<div role="list">
 		<?exp
@@ -73,6 +73,6 @@
 	<script>
 		console.log(<?e= JSON.stringify(Array.from(Object.getOwnPropertyNames(this))) ?>)
 	</script>
-	<code><?e= await wait(2) ?></code>
+	
 </body>
 </html>
