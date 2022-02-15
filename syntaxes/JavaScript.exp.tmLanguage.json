@@ -1562,6 +1562,28 @@
       },
       "patterns": [
         { "include": "source.exp#exp-tag" },
+        {
+          "end": "<\\?(?i:exp)",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.section.embedded.begin.exp"
+            }
+          },
+          "begin": "(\\?)>",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.section.embedded.end.exp"
+            },
+            "1": {
+              "name": "source.exp"
+            }
+          },
+          "patterns": [
+            {
+              "include": "source.exp"
+            }
+          ]
+        },
         { "include": "#import-export-clause" }
       ]
     },
@@ -1665,6 +1687,28 @@
               "contentName": "meta.block.js",
               "patterns": [
                 { "include": "source.exp#exp-tag" },
+                {
+                  "end": "<\\?(?i:exp)",
+                  "endCaptures": {
+                    "0": {
+                      "name": "punctuation.section.embedded.begin.exp"
+                    }
+                  },
+                  "begin": "(\\?)>",
+                  "beginCaptures": {
+                    "0": {
+                      "name": "punctuation.section.embedded.end.exp"
+                    },
+                    "1": {
+                      "name": "source.exp"
+                    }
+                  },
+                  "patterns": [
+                    {
+                      "include": "source.exp"
+                    }
+                  ]
+                },
                 { "include": "#statements" }
               ]
             },
@@ -1771,6 +1815,28 @@
       },
       "patterns": [
         { "include": "source.exp#exp-tag" },
+        {
+          "end": "<\\?(?i:exp)",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.section.embedded.begin.exp"
+            }
+          },
+          "begin": "(\\?)>",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.section.embedded.end.exp"
+            },
+            "1": {
+              "name": "source.exp"
+            }
+          },
+          "patterns": [
+            {
+              "include": "source.exp"
+            }
+          ]
+        },
         { "include": "#statements" }
       ]
     },

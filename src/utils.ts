@@ -1,4 +1,4 @@
-import { resolve } from "path"
+import path, { resolve } from "path"
 
 export function escapeQuotes(code: string): string {
     let map: {[key: string]: string} = {
@@ -24,12 +24,11 @@ export function escapeJsString(code: string = ""): string {
         '"': "\"",
         "'": "\'",
         "\\": "\\\\",
-        "\f": "\\f",
-        "\t": "\\t",
-        "\n": "\\n",
-        "\v": "\\v"
+        "\n": "\\\\n",
+        "\v": "\\\\v",
+        "\r\n": "\\\\r\\\\n"
     }
-    return (code + "").replace(/[\\'"\t\n\v\f]/gis, m => map[m])
+    return (code + "").replace(/("|'|\\|\r\n|\n|\v)/gis, m => map[m])
 }
 
 /**
@@ -58,6 +57,18 @@ export function parseError(error: Error): string {
     return (error.stack ||(error.name +" :\t"+ error.message) ).split(/\r\n|\n/)
         .slice(0, 2).join("\n")
         .replace(/\u001b\[\d+m/g, "")
+}
+
+export function getRequirer(dir?: string, file?: string): null|undefined|NodeModule{
+    let mod: NodeModule | undefined
+    for(let i in require.cache){
+        let mo = require.cache[i]
+        if((mo?.path == dir || path.dirname(mo?.filename||"") == dir) && mo?.filename == file){
+            mod = mo
+            break
+        }
+    }
+    if(mod) return mod?.parent
 }
 
 /**

@@ -1,6 +1,6 @@
 import { relative, resolve } from "path";
 import { Context as nContext, createContext, runInContext } from "vm"
-import { escapeHtml, escapeJsString, parseError } from "./utils";
+import {escapeHtml, escapeJsString, getRequirer, parseError} from "./utils";
 
 
 export class Context implements nContext {
@@ -28,15 +28,14 @@ export class Context implements nContext {
     public __errors: string[] = []
 
     constructor(globals?: nContext) {
+        let main = getRequirer(__dirname, __filename)
 
         this.internalContext = this.initContext({
             // context __dirname and __filename variable should target the requirer filename and dirname
-            __dirname: require.main?.path,
-            __filename: require.main?.filename,
+            __dirname: main?.path,
+            __filename: main?.filename,
             // local module should be loaded from the requirer directory
-            __module: relative(__dirname, require.main?.path!!),
-            // in case that the module is in root/node_modules/expressor
-            __root: resolve("../../.."),
+            __module: relative(__dirname, main?.path||"").replace(/\\/g, "/").replace(/(\w)$/gi, "$1/").replace(/^(\w)/gi, "./$1"),
             // with globals, requirer could override the previous defaults
             ...globals
         })
@@ -122,7 +121,7 @@ export class Context implements nContext {
             return;
         }
 
-        this.output += JSON.stringify(code)
+        this.output += escapeJsString(JSON.stringify(code))
     }
 
     /**
@@ -149,9 +148,8 @@ export class Context implements nContext {
      * 
      * @param {string} code string to escape
      */
-    public escapeHtml(code: string): void {
-        escapeHtml(code) 
-        return;
+    public escapeHtml(code: string): string {
+        return escapeHtml(code)
     }
 
     /**
@@ -159,9 +157,8 @@ export class Context implements nContext {
      * 
      * @param {string} code string to escape
      */
-    public escapeJsString(code: string): void {
-        escapeJsString(code)
-        return;
+    public escapeJsString(code: string): string {
+        return escapeJsString(code)
     }
 
     /**

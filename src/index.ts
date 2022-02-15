@@ -2,7 +2,7 @@ import { promises } from "fs";
 import { relative, resolve } from "path";
 import { Context , createContext } from "vm"
 import { Runner } from "./Runner";
-import { parseError } from "./utils";
+import { parseError, getRequirer} from "./utils";
 
 export interface runCallback {
     (error: string | null, result?: string): void
@@ -24,13 +24,16 @@ export interface runCallback {
  * @param {runCallback} callback the function that will be invoked after the parsing
  */
 export default function expressor(view: string, options?: Context, callback?: runCallback) {
+    let main = getRequirer(__dirname, __filename)
     let defaults = {
-        __dirname: require.main?.path,
-        __filename: require.main?.filename,
-        __module: relative(__dirname, require.main?.path!!),
-        __root: resolve("../../.."),
-        __view: view,
+        // context __dirname and __filename variable should target the requirer filename and dirname
+        __dirname: main?.path,
+        __filename: main?.filename,
+        // local module should be loaded from the requirer directory
+        __module: relative(__dirname, main?.path||"").replace(/\\/g, "/").replace(/(\w)$/gi, "$1/").replace(/^(\w)/gi, "./$1"),
+        __view: view
     }
+
     if (arguments.length == 2) {
         callback = options as runCallback
         options = createContext(defaults)

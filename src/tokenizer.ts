@@ -6,7 +6,6 @@ import { Grammars } from "./utils"
 
 export interface TokenResult {
     value: string,
-    ctx: string,
     scope: string
 }
 
@@ -35,10 +34,6 @@ function getState(scopes: string) {
         },
         { state: "text", value: true }
     ].filter(({ value }) => value)[0].state
-}
-
-function getContext(ctx: string[]){
-    return ["exp", "html", "js", "css"].includes(ctx[1])? ctx[1] : ctx[0]
 }
 
 export class Tokenizer {
@@ -103,94 +98,50 @@ export class Tokenizer {
                 lastScopes = tokenScope
                 result[reusltLen++] = {
                     value,
-                    ctx: scopes.slice(-2).map(s=>s.split(".").slice(-1).join()).join(" "),
                     scope: getState(tokenScope)
                 }
             }
         }
-
         return { tokens: result, ruleStack}
     }
     /**
      * tokenize a mutiline string to an array of tokens
-     * 
-     * @param {string|string[]} code multiline ( or array of ) string to tokenize
-     * @returns {Promise<LineToken[]>}
-     */
-    private async tokenizeLines(code: string|string[]): Promise<LineToken[]> {
-        if(!Array.isArray(code)) code = code.split(/\r\n|\n/)
-
-        let state: StackElement|undefined,
-            result: LineToken[] = [],
-            grammar = await this.grammar
-
-        for(let line of code){
-            let lRes = this.tokenizeLine(grammar!!, line, state)
-            result.push(lRes)
-            state = lRes.ruleStack
-        }
-
-        return result
-    }
-
-    /**
-     * tokenize a mutiline string to an array of tokens
-     * 
+     *
      * @param {string} code multiline ( or array of ) string to tokenize
      * @returns {Promise<TokenResult[]>}
      */
-    async tokenize(code: string): Promise<TokenResult[]>{
+    async tokenize(code: string|string[]): Promise<TokenResult[]> {
+        if(!Array.isArray(code)) code = code.split(/\r\n|\n/)
 
-        let resultLen = 0,
-            result: TokenResult[] = [] ,
-            tmpRes: TokenResult[] = []
+        let state: StackElement|undefined,
+            grammar = await this.grammar,
+            resultLen = 0,
+            result: TokenResult[] = [],
+            _li = 0
 
-        let tokensList = (await this.tokenizeLines(code)).map(r=>r.tokens)
+        for(let li in code){
 
-        for(let tokens of tokensList){
-            let len = 0,
-                tRes: TokenResult[]  = []
-            
+            let line = code[li]
+
+            let {tokens, ruleStack} = this.tokenizeLine(grammar!!, line, state)
+
             for(let token of tokens){
 
-                let ctx = getContext(token.ctx.split(" "))
-                if (token.scope == 'delimiter') continue
-                if (len == 0) {
-                    tRes[len++] = {...token, ctx}
-                    continue
-                }
-                if (tRes[len - 1].scope == token.scope) {
-                    if(tRes[len - 1].ctx == ctx){
-                        tRes[len - 1].value += token.value
-                    } else {
-                        tRes[len++] = {...token, ctx}
-                    }
+                if(resultLen == 0){
+                    result[resultLen++] = token
+                }else if(result[resultLen-1].scope == token.scope){
+                    result[resultLen-1].value += (_li == Number(li)? "" : "\n") + token.value
                 }else{
-                    tRes[len++] = {...token, ctx}
+                    result[resultLen++] = token
                 }
+                _li = Number(li)
             }
-            tmpRes =  tmpRes.concat(tRes)
+
+            state = ruleStack
         }
 
-        for (let token of tmpRes) {
-        
-            if (resultLen == 0) {
-                result[resultLen++] = token
-    
-            } else if (result[resultLen - 1].scope == token.scope) {
-                if(token.scope == "text" && result[resultLen - 1].ctx != token.ctx){
-                    result[resultLen++] = token
-                }else{
-                    result[resultLen - 1].value += "\n" + token.value
-                }
-            } else {
-                result[resultLen++] = token
-            }
-            
-        }
 
         return result
     }
-
 
 }

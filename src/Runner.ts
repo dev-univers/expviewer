@@ -1,8 +1,9 @@
 import { Context as nContext} from "vm";
 import { Context } from "./context";
 import { Tokenizer } from "./tokenizer";
-import { escapeQuotes, parseError } from "./utils";
+import {escapeQuotes, getRequirer, parseError} from "./utils";
 import { runCallback } from "./index";
+import {relative, resolve} from "path";
 
 
 export class Runner {
@@ -11,6 +12,14 @@ export class Runner {
     private tokenizer = new Tokenizer();
 
     constructor(options: nContext | undefined) {
+        let main = getRequirer(__dirname, __filename)
+        let defaults = {
+            // context __dirname and __filename variable should target the requirer filename and dirname
+            __dirname: main?.path,
+            __filename: main?.filename,
+            // local module should be loaded from the requirer directory
+            __module: relative(__dirname, main?.path||"").replace(/\\/g, "/").replace(/(\w)$/gi, "$1/").replace(/^(\w)/gi, "./$1")
+        }
         this.context = new Context({
             setTimeout,
             setInterval,
@@ -18,6 +27,7 @@ export class Runner {
             clearImmediate,
             clearInterval,
             clearTimeout,
+            ...defaults,
             ...options
         });
     }
