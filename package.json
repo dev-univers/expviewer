@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "dev": "nodemon lib/test/server.test.js",
-    "test": "mocha ./lib/test -t 60000",
+    "test": "mocha ./lib/test -t 6000",
     "build": "rm -r lib && tsc",
     "watch": "rm -r lib && tsc -w",
     "prepublish": "rm -r lib/test"

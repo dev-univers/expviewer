@@ -12,7 +12,7 @@ npm install expviewer
 # first view
 A sample preview in vscode
 
-<img src="./test/expvscode.png" alt="exp vscode preview" />
+<img src="./preview.png" alt="exp vscode preview" />
 
 # core description
 
@@ -66,7 +66,7 @@ Additionally to the basic javascript api, there are some build-in constants and 
     * require the models/index.js from view.exp
     ```js
     <?exp 
-        const models = require(__module+"/../models") // the requirer here is app.js
+        const models = require(__module+"../models") // the requirer here is app.js 
     ?>
     ```
 
