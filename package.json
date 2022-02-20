@@ -8,7 +8,7 @@
     "test": "mocha ./lib/test -t 60000",
     "build": "rm -r lib && tsc",
     "watch": "rm -r lib && tsc -w",
-    "pepublish": "rm -r lib/test"
+    "prepublish": "rm -r lib/test"
   },
   "files": [
     "lib",
