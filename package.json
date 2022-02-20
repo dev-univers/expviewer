@@ -25,6 +25,7 @@
   "author": "luckynems",
   "license": "MIT",
   "dependencies": {
+    "@types/request": "^2.48.8",
     "nyc": "^15.1.0",
     "vscode-oniguruma": "^1.6.1",
     "vscode-textmate": "^6.0.0"

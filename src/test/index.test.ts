@@ -1,6 +1,5 @@
 import express from "express";
 import exp from "../";
-// @ts-ignore
 import request from "request";
 import {readdirSync, writeFileSync} from "fs";
 import path from "path";
@@ -43,7 +42,7 @@ function run(code: string, options: Context = {}) {
     });
 
     return new Promise((resolve, rejects) => {
-        request("http://localhost:"+TEST_PORT+"/test-"+rid++, "GET", (error: any, response: any, body: string) => {
+        request("http://localhost:"+TEST_PORT+"/test-"+rid++, {method: "get"}, (error, response, body) => {
             remove("./test.exp")
 
             if(error) rejects(error)
