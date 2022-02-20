@@ -1,5 +1,4 @@
 # expviewer
-<<<<<<< HEAD
 
 Expviewer is a view engineer for express application that use a litle php like syntax to 
 describe view with some interesting features
@@ -173,5 +172,3 @@ app.get("/code", (req, res)=>{
     })
 })
 ```
-=======
->>>>>>> 303b7f730632fe4178a02d12ae2876ce13eaca6a
