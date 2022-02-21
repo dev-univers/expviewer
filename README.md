@@ -172,3 +172,6 @@ app.get("/code", (req, res)=>{
     })
 })
 ```
+# plus
+
+There is a vscode syntaxe support extension ( [Exp Support](https://marketplace.visualstudio.com/items?itemName=luckynems.exp-vscode-support&ssr=false#overview) ) and a Sublime Text syntaxe support package ( [Exp-language-support](https://github.com/dev-univers/Exp-language-support) ) that will highlight your code ( but they just offert code highlight for the moment )
