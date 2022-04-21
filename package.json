@@ -1,14 +1,12 @@
 {
   "name": "expviewer",
-  "version": "1.0.1",
-  "description": "",
+  "version": "1.1.0",
+  "description": "A view engineer for express application that use a litle php like syntax to describe view with some interesting features",
   "main": "lib/index.js",
   "scripts": {
-    "dev": "nodemon lib/test/server.test.js",
-    "test": "mocha ./lib/test -t 6000",
-    "build": "rm -r lib && tsc",
-    "watch": "rm -r lib && tsc -w",
-    "prepublish": "rm -r lib/test"
+    "test": "mocha ./lib/test -t 10000",
+    "build": "tsc",
+    "watch": "tsc -w"
   },
   "files": [
     "lib",
@@ -25,6 +23,7 @@
   "author": "luckynems",
   "license": "MIT",
   "dependencies": {
+    "source-map": "^0.7.3",
     "vscode-oniguruma": "^1.6.1",
     "vscode-textmate": "^6.0.0"
   },

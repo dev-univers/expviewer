@@ -1,5 +1,5 @@
 import { relative, resolve } from "path";
-import { Context as nContext, createContext, runInContext } from "vm"
+import { Context as nContext, createContext, runInContext, Script } from "vm"
 import {escapeHtml, escapeJsString, getRequirer, parseError} from "./utils";
 
 
@@ -47,27 +47,38 @@ export class Context implements nContext {
      * 
      * @param {string} code string to run in the context
      */
-     public run(code: string): Promise<string|Error[]> {
-         let script = '"use-strict" ; this.___running = true; (async ()=>{try{ ' + code + '; this.___running = false;\n}catch(ex){\vthis.___running = false;__errors.push(ex)\n}})()'
+     public run(code: string, filename?:string): Promise<string> {
+        
+        
         try {
-            runInContext(script, this.internalContext, {
-                filename: this.internalContext.__view
-            })
+            let script = new Script(
+                '"use-strict" ; this.___running = true; (async ()=>{try{ \n' + 
+                code + 
+                '\nthis.___running = false;\n}'+
+                'catch(ex){\vthis.___running = false;__errors.push(ex.stack)\n}})()',
+                {
+                    filename: filename || this.internalContext.__view,
+                    displayErrors: true,
+                    lineOffset: -1
+                }
+            )
+
+            script.runInContext(this.internalContext)
 
             return new Promise((resolve, reject)=>{
                 let t = setInterval(()=>{
                     if(!this.internalContext.___running){
                         clearInterval(t)
-                        if (this.internalContext.__errors.length > 0) return reject(this.internalContext.__errors)
-                        
+                        if (this.internalContext.__errors.length > 0){ 
+                            return reject(this.internalContext.__errors[0])
+                        }
                         resolve(this.internalContext.output)
                     }
                 },10)
             })
 
         } catch (error) {
-            this.internalContext.__errors.push(this.internalContext.error)
-            return Promise.reject(this.internalContext.__errors);
+            return Promise.reject(error);
         }
 
     }

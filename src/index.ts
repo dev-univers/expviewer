@@ -1,7 +1,7 @@
 import { promises } from "fs";
-import { relative, resolve } from "path";
+import { relative } from "path";
 import { Context , createContext } from "vm"
-import { Runner } from "./Runner";
+import { Runner } from "./runner";
 import { parseError, getRequirer} from "./utils";
 
 export interface runCallback {
@@ -47,7 +47,7 @@ export default function expressor(view: string, options?: Context, callback?: ru
     let runner = new Runner(options)
     
     promises.readFile(view).then(data => {
-        runner.run(data.toString(), callback!!)
+        runner.run(data.toString(), view, callback!!)
     }).catch(err => {
         callback!!(parseError(err))
     })

@@ -75,8 +75,5 @@ export function getRequirer(dir?: string, file?: string): null|undefined|NodeMod
  * @constant {object} Grammars the grammars registry for tokenization
  */
 export const Grammars: {[key: string]: string} = {
-    'source.exp.js': resolve(__dirname, '../syntaxes/JavaScript.exp.tmLanguage.json'),
-    'source.exp.css': resolve(__dirname, '../syntaxes/css.exp.tmLanguage.json'),
-	'text.html.exp': resolve(__dirname, '../syntaxes/html.exp.tmLanguage.json'),
-    'source.exp': resolve(__dirname, '../syntaxes/exp.tmLanguage.json')
+    "source.exp.lang": resolve(__dirname, '../syntaxes/ExpLang.tmLanguage.json')
 }

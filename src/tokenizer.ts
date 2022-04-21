@@ -6,12 +6,19 @@ import { Grammars } from "./utils"
 
 export interface TokenResult {
     value: string,
-    scope: string
+    scope: string, 
+    start: Pos, 
+    end: Pos
 }
 
 export interface LineToken {
     tokens: TokenResult[],
     ruleStack: StackElement
+} 
+
+export interface Pos {
+    line: number, 
+    column: number
 }
 
 function getState(scopes: string) {
@@ -40,11 +47,13 @@ export class Tokenizer {
 
     private scopeName = "source.exp"
     
-    private registry: Registry
+    private registry: Registry 
+    
+    grammar: IGrammar|null = null
 
     constructor(){
         
-        const wasmBin = readFileSync(resolve(__dirname, '../node_modules/vscode-oniguruma/release/onig.wasm')).buffer;
+        const wasmBin = readFileSync(require.resolve("vscode-oniguruma/release/onig.wasm")).buffer;
         const onigLib = loadWASM(wasmBin).then(() => {
             return {
                 createOnigScanner(patterns: string[]) { return new OnigScanner(patterns); },
@@ -66,11 +75,12 @@ export class Tokenizer {
                 }
                 return parseRawGrammar("{}", "blank.json")
             }
-        })
-    }
-
-    get grammar(){
-        return this.registry.loadGrammar(this.scopeName)
+        }) 
+        
+    } 
+    
+    async getGrammar(scopeName?: string){
+        return await this.registry.loadGrammar(scopeName || this.scopeName)
     }
 
     /**
@@ -81,8 +91,8 @@ export class Tokenizer {
      * @param {StackElement} state the previous line tokenization stack
      * @returns {LineToken}
      */
-    private tokenizeLine(grammar: IGrammar, line: string, state: StackElement = INITIAL): LineToken{
-        let reusltLen = 0,
+    tokenizeLine(grammar: IGrammar, line: string, lino: number, state: StackElement = INITIAL): LineToken{
+        let resultLen = 0,
             result: TokenResult[] = [] ,
             {tokens, ruleStack} = grammar.tokenizeLine(line, state),
             lastScopes: string|null = null
@@ -93,28 +103,38 @@ export class Tokenizer {
                 tokenScope = scopes.join(' ')
             
             if(lastScopes == tokenScope){
-                result[reusltLen - 1].value = value
+                let pi = resultLen - 1
+                result[pi].value += value
+                result[pi].end.column = endIndex
             }else{
                 lastScopes = tokenScope
-                result[reusltLen++] = {
+                result[resultLen++] = {
                     value,
-                    scope: getState(tokenScope)
+                    scope: tokenScope, 
+                    start: {
+                        line: lino, 
+                        column: startIndex
+                    }, 
+                    end: {
+                        line: lino, 
+                        column: endIndex
+                    }
                 }
             }
         }
         return { tokens: result, ruleStack}
     }
+    
     /**
      * tokenize a mutiline string to an array of tokens
      *
      * @param {string} code multiline ( or array of ) string to tokenize
-     * @returns {Promise<TokenResult[]>}
+     * @returns {TokenResult[]}
      */
-    async tokenize(code: string|string[]): Promise<TokenResult[]> {
+    tokenize(code: string|string[], grammar: IGrammar): TokenResult[] {
         if(!Array.isArray(code)) code = code.split(/\r\n|\n/)
 
         let state: StackElement|undefined,
-            grammar = await this.grammar,
             resultLen = 0,
             result: TokenResult[] = [],
             _li = 0
@@ -122,17 +142,45 @@ export class Tokenizer {
         for(let li in code){
 
             let line = code[li]
+            let lino = Number(li)
 
-            let {tokens, ruleStack} = this.tokenizeLine(grammar!!, line, state)
+            let {tokens, ruleStack} = this.tokenizeLine(grammar!!, line, lino, state)
 
             for(let token of tokens){
 
                 if(resultLen == 0){
+                    token.start.line=lino
+                    token.end.line=lino
                     result[resultLen++] = token
                 }else if(result[resultLen-1].scope == token.scope){
-                    result[resultLen-1].value += (_li == Number(li)? "" : "\n") + token.value
+                    let pi = resultLen - 1
+                    if(result[pi].end.line !== lino ){
+                        result[pi].value += '\n'+token.value
+                        result[pi].end.line = lino 
+                        result[pi].end.column = token.end.column
+                    } else {
+                        result[pi].value += token.value
+                        result[pi].end.column = token.end.column
+                    }
+                    
                 }else{
+                    token.start.line=lino
+                    token.end.line=lino
                     result[resultLen++] = token
+                    if(token.end.column === line.length){
+                        result[resultLen++] = {
+                            start: {
+                                line: lino, 
+                                column: line.length
+                            },
+                            end: {
+                                line: lino+1,
+                                column: 0
+                            },
+                            scope: 'eol', 
+                            value: '\n'
+                        }
+                    }
                 }
                 _li = Number(li)
             }
@@ -143,5 +191,5 @@ export class Tokenizer {
 
         return result
     }
-
-}
+    
+} 

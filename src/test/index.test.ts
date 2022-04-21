@@ -1,16 +1,16 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import exp from "../";
 import request from "request";
-import {readdirSync, writeFileSync} from "fs";
+import { readdirSync, writeFileSync } from "fs";
 import path from "path";
-import {Options, format} from "prettier";
+import { Options, format } from "prettier";
 import chai from "chai";
 import cap from "chai-as-promised";
-import {Context} from "vm";
-import {Server} from "http";
-import {Grammars} from "../utils";
-import {execSync} from "child_process";
-import {platform} from "os";
+import { Context } from "vm";
+import { Server } from "http";
+import { Grammars } from "../utils";
+import { execSync } from "child_process";
+import { platform } from "os";
 
 chai.use(cap);
 chai.should();
@@ -30,38 +30,46 @@ testApp.set("view engine", "exp")
 
 let rid = 0
 
-function remove(file: string){
-    execSync((platform() == "win32"? "del /S ":"rm -r ")+path.resolve(__dirname, file))
+function remove(file: string) {
+    execSync((platform() == "win32" ? "del /S " : "rm -r ") + path.resolve(__dirname, file))
 }
 
 function run(code: string, options: Context = {}) {
     writeFileSync(path.resolve(__dirname, "test.exp"), code);
 
-    testApp.get("/test-"+rid, (req, res) => {
+    testApp.get("/test-" + rid, (req, res) => {
         res.render("test", options);
     });
 
+    testApp.use((err: any, req: Request, res: Response, next: NextFunction)=>{
+        if(typeof err === "string") {
+            res.status(401).send("<pre>"+err.replace(/\n/g, "<br/>")+"</pre>")
+            return next()
+          }
+          next(err)
+    })
+
     return new Promise((resolve, rejects) => {
-        request("http://localhost:"+TEST_PORT+"/test-"+rid++, {method: "get"}, (error, response, body) => {
+        request("http://localhost:" + TEST_PORT + "/test-" + rid++, { method: "get" }, (error, response, body) => {
             remove("./test.exp")
 
-            if(error) rejects(error)
+            if (error) rejects(error)
             resolve(format(body, formatOptions));
         });
     });
 }
 
-let server: Server
+let server: Server = testApp.listen(TEST_PORT)
 
-describe("expviewer test", ()=>{
-    before(()=>{
-        server = testApp.listen(TEST_PORT)
-    })
-    after(()=>{
+describe("expviewer test", () => {
+    // before(()=>{
+    //     server = testApp.listen(TEST_PORT)
+    // })
+    after(() => {
         server.close()
         rid = 0
     })
-    describe("#tags", ()=>{
+    describe("#tags", () => {
 
         it("should plain code walk", done => {
             run(`<h1> Hello World !</h1>`).should.eventually
@@ -82,8 +90,8 @@ describe("expviewer test", ()=>{
         })
     })
 
-    describe("#globals", ()=>{
-        it("should globals be ok", done=>{
+    describe("#globals", () => {
+        it("should globals be ok", done => {
             run(`<?exp
                 let globals = {__dirname, __filename, __module, __view}
             ?>
@@ -106,7 +114,7 @@ describe("expviewer test", ()=>{
         it("should write well", done => {
             let code = `<div class="dome"> just a demo </div>`
             run(`<?exp
-                print("<!-- just a to comment -->\\n")
+                print("<!-just a to comment -->\\n")
                 println("<!DOCTYPE html>")
             ?>
             <html>
@@ -119,13 +127,14 @@ describe("expviewer test", ()=>{
                     console.log(<?exp writeJs(users) ?>)
                 </script>
             </body>
-            </html>`,{
+            </html>`, {
                 title: "demo",
                 code: code,
-                users:[
-                    {id: 0, uname: "lucky"},
-                    {id: 1, uname: "nems"}
-                ]}).should.eventually.equals(format(`<!-- just a to comment -->
+                users: [
+                    { id: 0, uname: "lucky" },
+                    { id: 1, uname: "nems" }
+                ]
+            }).should.eventually.equals(format(`<!-just a to comment -->
                 <!DOCTYPE html>
                 <html>
                 <head>
@@ -142,9 +151,9 @@ describe("expviewer test", ()=>{
 
     })
 
-    describe("#nodejsApi", ()=>{
+    describe("#nodejsApi", () => {
 
-        it("should require internal", done=>{
+        it("should require internal", done => {
             run(`<?exp
                 let path = require("path")
             ?>
@@ -152,11 +161,11 @@ describe("expviewer test", ()=>{
                 console.log(<?e= JSON.stringify({...path.win32, win32: undefined, posix: undefined}) ?>)
             </script>`).should.eventually
                 .equals(format(`<script>
-                    console.log(${JSON.stringify({...path.win32, win32: undefined, posix: undefined})})
+                    console.log(${JSON.stringify({ ...path.win32, win32: undefined, posix: undefined })})
                 </script>`, formatOptions)).notify(done)
         })
 
-        it("should require js file", done=>{
+        it("should require js file", done => {
             run(`<?exp
                 let {Grammars} = require(__module+"../utils")
             ?>
@@ -168,13 +177,13 @@ describe("expviewer test", ()=>{
                 </script>`, formatOptions)).notify(done)
         })
 
-        it("should require json file", done=>{
+        it("should require json file", done => {
             const users = [
-                {id: 0, uname: "lucky"},
-                {id: 1, uname: "nems"}
+                { id: 0, uname: "lucky" },
+                { id: 1, uname: "nems" }
             ]
             writeFileSync(path.resolve(__dirname, "users.json"), JSON.stringify(users))
-            after(()=>{
+            after(() => {
                 remove("./users.json")
             })
             run(`<?exp
@@ -198,9 +207,9 @@ describe("expviewer test", ()=>{
         })
     })
 
-    describe("#utils", ()=>{
+    describe("#utils", () => {
 
-        it("should use async", done=>{
+        it("should use async", done => {
 
             run(`<?exp
                 let {promises} = require("fs")
@@ -213,7 +222,7 @@ describe("expviewer test", ()=>{
         it("should wait callback", done => {
             let code = "bonjour le monde !"
             writeFileSync(path.resolve(__dirname, "demo.txt"), code)
-            after(()=>{
+            after(() => {
                 remove("demo.txt")
             })
 
@@ -233,13 +242,112 @@ describe("expviewer test", ()=>{
                 .equals(format(code, formatOptions)).notify(done)
         })
 
-        it("should escape html", done=>{
+        it("should escape html", done => {
             let code = `<div class="test"> just for test </div>`
-            run(`<pre><?e= escapeHtml(code) ?></pre>`, {code}).should.eventually
+            run(`<pre><?e= escapeHtml(code) ?></pre>`, { code }).should.eventually
                 .equals(format(`<pre>&lt;div class=&quot;test&quot;&gt; just for test &lt;/div&gt;</pre>`, formatOptions)).notify(done)
         })
 
 
+    })
+
+    describe("#inclusions", () => {
+
+        it("should include view", done => {
+            let inc = `<?exp
+            let name = "lucky" 
+            ?>
+            <h1> <?e= name ?> </h1>`
+            let code = `<div> this is for inclusion </div>
+            <h1> lucky </h1>`
+
+            writeFileSync(path.resolve(__dirname, "inc.exp"), inc)
+            after(() => {
+                remove("inc.exp")
+            })
+
+            run(`<div> this is for inclusion </div>
+            <?exp include("inc") ?>`).should.eventually
+                .equals(format(code, formatOptions)).notify(done)
+        })
+
+        it("should share members", done => {
+            let inc = `
+            <li> <?e= name ?> </li>`
+            let code = `<div> the list of users </div>
+            <ul>
+                <li> lucky </li>
+                <li> nems </li>
+            </ul>`
+
+            writeFileSync(path.resolve(__dirname, "inc.exp"), inc)
+            after(() => {
+                remove("inc.exp")
+            })
+
+            run(`<?exp 
+                let users = ["lucky", "nems"]; 
+            ?>
+            <div> the list of users </div>
+            <ul>
+            <?exp users.forEach(name=>{
+                include("inc") 
+            }) ?>
+            </ul>`).should.eventually
+                .equals(format(code, formatOptions)).notify(done)
+        })
+        
+        it("should repport error", done => {
+            let inc = `<?exp
+                let post = {}
+            ?>
+            <div> <?exp include("viewer") ?> </div>`
+            let code = `<pre>Error: ENOENT: no such file or directory, open '${path.resolve(__dirname, "viewer.exp")}'<br/>    at ${path.resolve(__dirname, "inc.exp")}:4:25<br/>    at ${path.resolve(__dirname, "test.exp")}:2:19</pre>`
+
+            writeFileSync(path.resolve(__dirname, "inc.exp"), inc)
+            after(() => {
+                remove("inc.exp")
+            })
+
+            run(`<div> this is for inclusion </div>
+            <?exp include("inc") ?>`).should.eventually
+                .equals(format(code, formatOptions)).notify(done)
+        })
+    })
+
+    describe("#debugging", () => {
+
+        it("should repport error origin", done => {
+            let code = `<pre>ReferenceError: test is not defined<br/>    at ${path.resolve(__dirname, "test.exp")}:2:15</pre>`
+
+            run('<?exp \n' +
+                '   let vals = test.show() \n'+
+                '?>').should.eventually
+                .equals(format(code, formatOptions)).notify(done)
+        })
+
+        it("should repport stack trace", done => {
+            let inc = '<ul> <?exp\n' +
+                '   vals.forEach(val=>{\n' +
+                '       include("inc2")\n' +
+                '   })\n' +
+                '?> </ul>'
+            let inc2 = `<li> <?e= val.name() ?> </li>`
+            let code = `<pre>TypeError: val.name is not a function<br/>    at ${path.resolve(__dirname, "inc2.exp")}:1:15<br/>    at ${path.resolve(__dirname, "inc.exp")}:3:8<br/>    at ${path.resolve(__dirname, "test.exp")}:3:4</pre>`
+
+            writeFileSync(path.resolve(__dirname, "inc.exp"), inc)
+            writeFileSync(path.resolve(__dirname, "inc2.exp"), inc2)
+            after(() => {
+                remove("inc.exp")
+                remove("inc2.exp")
+            })
+
+            run('<?exp \n' +
+                '   let vals = [1,2,3,4] \n'+
+                '   include("inc")\n' +
+                '?>').should.eventually
+                .equals(format(code, formatOptions)).notify(done)
+        })
     })
 
 })
