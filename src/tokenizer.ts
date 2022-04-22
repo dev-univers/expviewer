@@ -21,34 +21,18 @@ export interface Pos {
     column: number
 }
 
-function getState(scopes: string) {
-    return [
-        { state: "delimiter", value: scopes.match(/punctuation\.section\.embedded\.(begin|end)\.exp/gi) },
-        { state: "text", value: scopes.match(/(\.(html)(\.exp|))$/gi) },
-        {
-            state: "block",
-            value: (_ => {
-                let nscope = scopes.replace(/.+(meta\.embedded\.(block|line).+?)$/gi, "$1")
-                return nscope.match(/meta\.embedded\.block\.exp/gi)
-            })()
-        },
-        {
-            state: "write",
-            value: (_ => {
-                let nscope = scopes.replace(/.+(meta\.embedded\.(block|line).+?)$/gi, "$1")
-                return nscope.match(/meta\.embedded\.line\.exp/gi)
-            })()
-        },
-        { state: "text", value: true }
-    ].filter(({ value }) => value)[0].state
-}
-
 export class Tokenizer {
-
-    private scopeName = "source.exp"
-    
+    /**
+     * @property the grammar scope name
+     */
+    private scopeName = "source.exp.lang"
+    /**
+     * @property the vscode-textmate registry for grammars
+     */
     private registry: Registry 
-    
+    /**
+     * @property the tokenization grammar
+     */
     grammar: IGrammar|null = null
 
     constructor(){
@@ -78,7 +62,11 @@ export class Tokenizer {
         }) 
         
     } 
-    
+    /**
+     * retrive a textmate grammar
+     * 
+     * @param {string|undefined} scopeName the optional scope name
+     */
     async getGrammar(scopeName?: string){
         return await this.registry.loadGrammar(scopeName || this.scopeName)
     }
@@ -187,7 +175,6 @@ export class Tokenizer {
 
             state = ruleStack
         }
-
 
         return result
     }
