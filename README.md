@@ -70,6 +70,15 @@ Additionally to the basic javascript api, there are some build-in constants and 
     ?>
     ```
 
+* `include: (view: string)=>void`: a function to include  view in another view; the nclusion is done during the building times so you can't use a scoped variable inside it. `eg:` 
+```
+    <?exp
+        let view = "includ"
+        include(view) // this will throw a ReferenceError
+        include("inc"+"clude"+2) // this will include the related "include2.exp" view
+    ?>
+```
+
 * `print: (value: string|any)=>void`: a build in function used to write something inside the response that will be generated
 
 * `println: (value: string|any)=>void`: do the same job than `print` but with a line break ( just a `\n` not `<br />` )
@@ -172,6 +181,11 @@ app.get("/code", (req, res)=>{
     })
 })
 ```
+Also, error tracking is implemented but it is always not such accurate especially for SyntaxError
+so when it's the case, first look at openig and closing tags or refers to the syntax highlight in your text editor (`vscode` or `sublime text`) if you have install the extensions.
+
 # plus
 
 There is a vscode syntaxe support extension ( [Exp Support](https://marketplace.visualstudio.com/items?itemName=luckynems.exp-vscode-support&ssr=false#overview) ) and a Sublime Text syntaxe support package ( [Exp-language-support](https://github.com/dev-univers/Exp-language-support) ) that will highlight your code ( but they just offert code highlight for the moment )
+
+All your contributions are welcome to make this more powerfull :-); !!
