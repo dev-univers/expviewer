@@ -70,7 +70,7 @@ Additionally to the basic javascript api, there are some build-in constants and 
     ?>
     ```
 
-* `include: (view: string)=>void`: a function to include  view in another view; the nclusion is done during the building times so you can't use a scoped variable inside it. `eg:` 
+* `include: (view: string)=>void`: a function to include  view inside other view; inclusions are made during the compilation so, the use of variables as parameters is currently not possible. 
 ```
     <?exp
         let view = "includ"
@@ -181,11 +181,10 @@ app.get("/code", (req, res)=>{
     })
 })
 ```
-Also, error tracking is implemented but it is always not such accurate especially for SyntaxError
-so when it's the case, first look at openig and closing tags or refers to the syntax highlight in your text editor (`vscode` or `sublime text`) if you have install the extensions.
+Moreover, error tracking and translating to their original positions is included, but syntax errors may not be at their right position, so in general you will have to be careful with closing exp tags and other syntax errors. you can refer to your editor's syntax highlighting to see syntax errors if you have installed the corresponding extension (for `vscode` or `Sublime Text`)
 
 # plus
 
 There is a vscode syntaxe support extension ( [Exp Support](https://marketplace.visualstudio.com/items?itemName=luckynems.exp-vscode-support&ssr=false#overview) ) and a Sublime Text syntaxe support package ( [Exp-language-support](https://github.com/dev-univers/Exp-language-support) ) that will highlight your code ( but they just offert code highlight for the moment )
 
-All your contributions are welcome to make this more powerfull :-); !!
+Any contribution with th aim of correcting any errors, improving or add features would be welcome, as well as your feedback on errors and inconveniences encountered with expviewer.
