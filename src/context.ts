@@ -1,6 +1,6 @@
 import { relative, resolve } from "path";
 import { Context as nContext, createContext, runInContext, Script } from "vm"
-import {escapeHtml, escapeJsString, getRequirer, parseError} from "./utils";
+import { escapeHtml, escapeJsString, getRequirer, parseError } from "./utils";
 
 
 export class Context implements nContext {
@@ -35,7 +35,7 @@ export class Context implements nContext {
             __dirname: main?.path,
             __filename: main?.filename,
             // local module should be loaded from the requirer directory
-            __module: relative(__dirname, main?.path||"").replace(/\\/g, "/").replace(/(\w)$/gi, "$1/").replace(/^(\w)/gi, "./$1"),
+            __module: relative(__dirname, main?.path || "").replace(/\\/g, "/").replace(/(\w)$/gi, "$1/").replace(/^(\w)/gi, "./$1"),
             // with globals, requirer could override the previous defaults
             ...globals
         })
@@ -47,14 +47,14 @@ export class Context implements nContext {
      * 
      * @param {string} code string to run in the context
      */
-     public run(code: string, filename?:string): Promise<string> {
-        
-        
+    public run(code: string, filename?: string): Promise<string> {
+
+
         try {
             let script = new Script(
-                '"use-strict" ; this.___running = true; (async ()=>{try{ \n' + 
-                code + 
-                '\nthis.___running = false;\n}'+
+                '"use-strict" ; this.___running = true; (async ()=>{try{ \n' +
+                code +
+                '\nthis.___running = false;\n}' +
                 'catch(ex){\vthis.___running = false;__errors.push(ex.stack)\n}})()',
                 {
                     filename: filename || this.internalContext.__view,
@@ -65,16 +65,16 @@ export class Context implements nContext {
 
             script.runInContext(this.internalContext)
 
-            return new Promise((resolve, reject)=>{
-                let t = setInterval(()=>{
-                    if(!this.internalContext.___running){
+            return new Promise((resolve, reject) => {
+                let t = setInterval(() => {
+                    if (!this.internalContext.___running) {
                         clearInterval(t)
-                        if (this.internalContext.__errors.length > 0){ 
+                        if (this.internalContext.__errors.length > 0) {
                             return reject(this.internalContext.__errors[0])
                         }
                         resolve(this.internalContext.output)
                     }
-                },10)
+                }, 10)
             })
 
         } catch (error) {
@@ -146,7 +146,7 @@ export class Context implements nContext {
             return;
         }
 
-        if(typeof code == "string"){
+        if (typeof code == "string") {
             this.output += escapeHtml(code)
             return;
         }
@@ -178,15 +178,15 @@ export class Context implements nContext {
      * @param {nContext} defaults the defaults globals
      * @returns {nContext} the contextified object based on this
      */
-    private initContext(defaults: nContext): nContext{
-        
+    private initContext(defaults: nContext): nContext {
+
         let ctx = createContext({
             ...this,
             ...defaults
         })
 
         ctx.print = this.print.bind(ctx)
-        ctx.println =this.println.bind(ctx)
+        ctx.println = this.println.bind(ctx)
         ctx.parseError = this.parseError.bind(ctx)
         ctx.write = this.write.bind(ctx)
         ctx.writeJs = this.writeJs.bind(ctx)
