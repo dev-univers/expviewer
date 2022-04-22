@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import exp from "../";
 import request from "request";
-import { readdirSync, writeFileSync } from "fs";
+import { readdirSync, writeFileSync, existsSync } from "fs";
 import path from "path";
 import { Options, format } from "prettier";
 import chai from "chai";
@@ -31,6 +31,7 @@ testApp.set("view engine", "exp")
 let rid = 0
 
 function remove(file: string) {
+    if(!existsSync(file)) return
     execSync((platform() == "win32" ? "del /S " : "rm -r ") + path.resolve(__dirname, file))
 }
 
