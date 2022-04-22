@@ -12,10 +12,10 @@ export interface runCallback {
  * parse a view and invoke the callback function that will rende the result .
  * this function can be use as view enginer context in an express application
  * ```js
- *  const expressor = require("expressor")
+ *  const exp = require("expviewer")
  *  ...
  *  const app = express()
- *  app.engine("exp", expressor)
+ *  app.engine("exp", exp)
  *  app.set('view engine', 'exp')
  * ```
  * 
@@ -23,7 +23,7 @@ export interface runCallback {
  * @param {Context} options the default globals to declare in the context
  * @param {runCallback} callback the function that will be invoked after the parsing
  */
-export default function expressor(view: string, options?: Context, callback?: runCallback) {
+export default function expviewer(view: string, options?: Context, callback?: runCallback) {
     let main = getRequirer(__dirname, __filename)
     let defaults = {
         // context __dirname and __filename variable should target the requirer filename and dirname
