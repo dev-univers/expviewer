@@ -12,7 +12,9 @@ export class Runner {
      * @property the context in which te script will be executed
      */
     private context: Context;
-
+    /**
+     * @property the builder
+     */
     private builder = new Builder()
 
     constructor(options: nContext | undefined) {
